@@ -1,0 +1,6 @@
+docker/data/
+.DS_Store
+*/.DS_Store
+
+**/obj
+**/.idea
