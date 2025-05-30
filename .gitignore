@@ -1,3 +1,7 @@
 docker/data/
 .DS_Store
 */.DS_Store
+**/bin
+**/*/bin
+**/obj
+**/.idea

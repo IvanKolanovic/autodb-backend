@@ -1,6 +1,0 @@
-@AutoDbBackend_HostAddress = http://localhost:5276
-
-GET {{AutoDbBackend_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
