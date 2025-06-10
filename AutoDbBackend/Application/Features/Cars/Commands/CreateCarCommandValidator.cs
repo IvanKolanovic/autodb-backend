@@ -19,7 +19,9 @@ public class CreateCarCommandValidator : AbstractValidator<CreateCarCommand>
             .WithMessage("Model must not exceed 50 characters");
 
         RuleFor(x => x.Year)
-            .InclusiveBetween(1900, DateTime.Now.Year + 1)
-            .WithMessage($"Year must be between 1900 and {DateTime.Now.Year + 1}");
+            .GreaterThan(1900)
+            .WithMessage("Year must be greater than 1900")
+            .LessThanOrEqualTo(DateTime.Now.Year + 1)
+            .WithMessage($"Year must not be greater than {DateTime.Now.Year + 1}");
     }
 }
