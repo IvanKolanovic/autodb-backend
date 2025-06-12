@@ -1,4 +1,4 @@
-using Domain.Common.Results;
+using Application.Common.Results;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoDbBackend.Extensions;

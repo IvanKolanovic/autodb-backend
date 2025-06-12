@@ -1,4 +1,4 @@
-using Domain.Common.Results;
+using Application.Common.Results;
 using FluentValidation;
 using MediatR;
 
