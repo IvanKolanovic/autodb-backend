@@ -23,6 +23,7 @@
       <Folder Include="Common\" />
       <Folder Include="Common\Behaviours\" />
       <Folder Include="Features\" />
+      <Folder Include="Features\Vehicles\Queries\YmmtDetailsCarSearch\" />
     </ItemGroup>
 
 </Project>
