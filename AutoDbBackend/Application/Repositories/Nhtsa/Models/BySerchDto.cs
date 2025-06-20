@@ -27,7 +27,7 @@ public class VehicleResultDto
     public bool OverTheAirUpdate { get; set; }
 
     [JsonPropertyName("artemisId")]
-    public int ArtemisId { get; set; }
+    public int? ArtemisId { get; set; }
 
     [JsonPropertyName("active")]
     public bool Active { get; set; }
