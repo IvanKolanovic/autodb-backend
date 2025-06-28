@@ -4,6 +4,7 @@ using Application.Common.Behaviours;
 using Application.Common.Interfaces;
 using Application.Repositories.Dashboard;
 using Application.Repositories.Nhtsa;
+using Application.Repositories.Safety;
 using FluentValidation;
 using Application.Services;
 using MediatR;
@@ -26,17 +27,13 @@ public static class DependencyInjection
         // Add FluentValidation
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-        // Register DashboardRepository with absolute path to CSV file
-        var csvFilePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "recall_data.csv"));
+        // Register DashboardRepository
+        var recallDataPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "recall_data.csv"));
+        services.AddScoped<IDashboardRepository>(provider => new DashboardRepository(recallDataPath));
 
-        // If that doesn't exist, try another path
-        if (!File.Exists(csvFilePath))
-        {
-            csvFilePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "AutoDbBackend", "Infrastructure", "Data", "recall_data.csv"));
-        }
-
-        Console.WriteLine($"Registering DashboardRepository with CSV file path: {csvFilePath}");
-        services.AddScoped<IDashboardRepository>(provider => new DashboardRepository(csvFilePath));
+        // Register SafetyRepository
+        var safetyDataPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "safercar.csv"));
+        services.AddScoped<ISafetyRepository>(provider => new SafetyRepository(safetyDataPath));
 
         var options = new JsonSerializerOptions
         {

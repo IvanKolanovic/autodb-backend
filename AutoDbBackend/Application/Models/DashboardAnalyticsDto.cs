@@ -18,6 +18,12 @@ public class DashboardAnalyticsDto
 
     [JsonPropertyName("recallsByYear")]
     public List<RecallsByYearDto> RecallsByYear { get; set; } = [];
+
+    [JsonPropertyName("crashTestPerformance")]
+    public List<CrashTestPerformanceDto> CrashTestPerformance { get; set; } = [];
+
+    [JsonPropertyName("rolloverResistanceData")]
+    public List<RolloverResistanceDto> RolloverResistanceData { get; set; } = [];
 }
 
 public class ManufacturerRecallCountDto

@@ -20,9 +20,5 @@
         <None Remove="Migrations\*.sql" />
         <EmbeddedResource Include="Migrations\*.sql" />
     </ItemGroup>
-    
-    <ItemGroup>
-      <Folder Include="Data\" />
-    </ItemGroup>
 
 </Project>

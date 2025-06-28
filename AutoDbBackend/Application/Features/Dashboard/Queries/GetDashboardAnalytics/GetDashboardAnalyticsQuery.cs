@@ -2,6 +2,7 @@ using Application.Common.Interfaces;
 using Application.Common.Results;
 using Application.Models;
 using Application.Repositories.Dashboard;
+using Application.Repositories.Safety;
 using MediatR;
 using System.Text.Json;
 
@@ -16,20 +17,14 @@ public class GetDashboardAnalyticsQuery : IRequest<Result<DashboardAnalyticsDto>
     public int EndYear { get; init; } = 0;
 }
 
-public class GetDashboardAnalyticsQueryHandler : IRequestHandler<GetDashboardAnalyticsQuery, Result<DashboardAnalyticsDto>>
+public class GetDashboardAnalyticsQueryHandler(
+    IDashboardRepository dashboardRepository,
+    ISafetyRepository safetyRepository,
+    ICacheService cacheService)
+    : IRequestHandler<GetDashboardAnalyticsQuery, Result<DashboardAnalyticsDto>>
 {
-    private readonly IDashboardRepository _dashboardRepository;
-    private readonly ICacheService _cacheService;
     private const string CacheKeyPrefix = "dashboard_analytics";
     private readonly TimeSpan _cacheExpiration = TimeSpan.FromHours(1);
-
-    public GetDashboardAnalyticsQueryHandler(
-        IDashboardRepository dashboardRepository,
-        ICacheService cacheService)
-    {
-        _dashboardRepository = dashboardRepository;
-        _cacheService = cacheService;
-    }
 
     public async Task<Result<DashboardAnalyticsDto>> Handle(GetDashboardAnalyticsQuery request, CancellationToken cancellationToken)
     {
@@ -39,7 +34,7 @@ public class GetDashboardAnalyticsQueryHandler : IRequestHandler<GetDashboardAna
             var cacheKey = $"{CacheKeyPrefix}_{request.RecentRecallsCount}_{request.TopManufacturersCount}_{request.MostRecalledVehiclesCount}_{request.StartYear}_{request.EndYear}";
 
             // Try to get from cache first
-            var cachedResult = await _cacheService.GetAsync<DashboardAnalyticsDto>(cacheKey);
+            var cachedResult = await cacheService.GetAsync<DashboardAnalyticsDto>(cacheKey);
             if (cachedResult != null)
             {
                 Console.WriteLine("Returning dashboard analytics from cache");
@@ -49,38 +44,36 @@ public class GetDashboardAnalyticsQueryHandler : IRequestHandler<GetDashboardAna
             Console.WriteLine("Cache miss for dashboard analytics, fetching from repository");
 
             // Get recent recalls
-            var recentRecalls = await _dashboardRepository.GetRecentRecalls(request.RecentRecallsCount);
+            var recentRecalls = await dashboardRepository.GetRecentRecalls(request.RecentRecallsCount);
 
             // Get recalls by manufacturer
-            var recallsByManufacturer = await _dashboardRepository.GetRecallsByManufacturer(request.TopManufacturersCount);
+            var recallsByManufacturer = await dashboardRepository.GetRecallsByManufacturer(request.TopManufacturersCount);
 
             // Get most recalled vehicles
-            var mostRecalledVehicles = await _dashboardRepository.GetMostRecalledVehicles(request.MostRecalledVehiclesCount);
+            var mostRecalledVehicles = await dashboardRepository.GetMostRecalledVehicles(request.MostRecalledVehiclesCount);
 
             // Get recalls by year
-            var recallsByYear = await _dashboardRepository.GetRecallsByYear(request.StartYear, request.EndYear);
+            var recallsByYear = await dashboardRepository.GetRecallsByYear(request.StartYear, request.EndYear);
+
+            // Get crash test performance data
+            var crashTestPerformance = await safetyRepository.GetCrashTestPerformanceByManufacturer();
+
+            // Get rollover resistance data
+            var rolloverResistanceData = await safetyRepository.GetRolloverResistanceData();
 
             // Create the dashboard analytics DTO
             var dashboardAnalytics = new DashboardAnalyticsDto
             {
-                Meta = new MetaDto
-                {
-                    Status = 200,
-                    Messages = new List<string>(),
-                    Pagination = new PaginationDto
-                    {
-                        Count = recentRecalls.Count + recallsByManufacturer.Count + mostRecalledVehicles.Count + recallsByYear.Count,
-                        Total = recentRecalls.Count + recallsByManufacturer.Count + mostRecalledVehicles.Count + recallsByYear.Count
-                    }
-                },
                 RecentRecalls = recentRecalls,
                 RecallsByManufacturer = recallsByManufacturer,
                 MostRecalledVehicles = mostRecalledVehicles,
-                RecallsByYear = recallsByYear
+                RecallsByYear = recallsByYear,
+                CrashTestPerformance = crashTestPerformance,
+                RolloverResistanceData = rolloverResistanceData
             };
 
             // Cache the result
-            await _cacheService.SetAsync(cacheKey, dashboardAnalytics, _cacheExpiration);
+            await cacheService.SetAsync(cacheKey, dashboardAnalytics, _cacheExpiration);
             Console.WriteLine($"Dashboard analytics cached with key: {cacheKey}");
 
             return dashboardAnalytics;
