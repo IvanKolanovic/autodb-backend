@@ -12,6 +12,8 @@ public class GetDashboardAnalyticsQuery : IRequest<Result<DashboardAnalyticsDto>
     public int RecentRecallsCount { get; init; } = 10;
     public int TopManufacturersCount { get; init; } = 5;
     public int MostRecalledVehiclesCount { get; init; } = 5;
+    public int StartYear { get; init; } = 0;
+    public int EndYear { get; init; } = 0;
 }
 
 public class GetDashboardAnalyticsQueryHandler : IRequestHandler<GetDashboardAnalyticsQuery, Result<DashboardAnalyticsDto>>
@@ -34,7 +36,7 @@ public class GetDashboardAnalyticsQueryHandler : IRequestHandler<GetDashboardAna
         try
         {
             // Generate a cache key based on the request parameters
-            var cacheKey = $"{CacheKeyPrefix}_{request.RecentRecallsCount}_{request.TopManufacturersCount}_{request.MostRecalledVehiclesCount}";
+            var cacheKey = $"{CacheKeyPrefix}_{request.RecentRecallsCount}_{request.TopManufacturersCount}_{request.MostRecalledVehiclesCount}_{request.StartYear}_{request.EndYear}";
 
             // Try to get from cache first
             var cachedResult = await _cacheService.GetAsync<DashboardAnalyticsDto>(cacheKey);
@@ -55,6 +57,9 @@ public class GetDashboardAnalyticsQueryHandler : IRequestHandler<GetDashboardAna
             // Get most recalled vehicles
             var mostRecalledVehicles = await _dashboardRepository.GetMostRecalledVehicles(request.MostRecalledVehiclesCount);
 
+            // Get recalls by year
+            var recallsByYear = await _dashboardRepository.GetRecallsByYear(request.StartYear, request.EndYear);
+
             // Create the dashboard analytics DTO
             var dashboardAnalytics = new DashboardAnalyticsDto
             {
@@ -64,13 +69,14 @@ public class GetDashboardAnalyticsQueryHandler : IRequestHandler<GetDashboardAna
                     Messages = new List<string>(),
                     Pagination = new PaginationDto
                     {
-                        Count = recentRecalls.Count + recallsByManufacturer.Count + mostRecalledVehicles.Count,
-                        Total = recentRecalls.Count + recallsByManufacturer.Count + mostRecalledVehicles.Count
+                        Count = recentRecalls.Count + recallsByManufacturer.Count + mostRecalledVehicles.Count + recallsByYear.Count,
+                        Total = recentRecalls.Count + recallsByManufacturer.Count + mostRecalledVehicles.Count + recallsByYear.Count
                     }
                 },
                 RecentRecalls = recentRecalls,
                 RecallsByManufacturer = recallsByManufacturer,
-                MostRecalledVehicles = mostRecalledVehicles
+                MostRecalledVehicles = mostRecalledVehicles,
+                RecallsByYear = recallsByYear
             };
 
             // Cache the result

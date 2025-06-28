@@ -15,6 +15,9 @@ public class DashboardAnalyticsDto
 
     [JsonPropertyName("mostRecalledVehicles")]
     public List<MostRecalledVehicleDto> MostRecalledVehicles { get; set; } = [];
+
+    [JsonPropertyName("recallsByYear")]
+    public List<RecallsByYearDto> RecallsByYear { get; set; } = [];
 }
 
 public class ManufacturerRecallCountDto
@@ -81,4 +84,13 @@ public class RecentRecallDto
 
     [JsonPropertyName("completionRate")]
     public string CompletionRate { get; set; } = string.Empty;
+}
+
+public class RecallsByYearDto
+{
+    [JsonPropertyName("year")]
+    public int Year { get; set; }
+
+    [JsonPropertyName("count")]
+    public int Count { get; set; }
 }

@@ -127,6 +127,85 @@ public class DashboardRepository : IDashboardRepository
         }
     }
 
+    public async Task<List<RecallsByYearDto>> GetRecallsByYear(int startYear = 0, int endYear = 0)
+    {
+        try
+        {
+            // Get all recalls
+            var allRecalls = await GetAllRecalls();
+
+            // Extract years from the report received date
+            var recallsWithYears = allRecalls
+                .Select(r => new
+                {
+                    Recall = r,
+                    Year = ExtractYearFromDate(r.ReportReceivedDate)
+                })
+                .Where(r => r.Year > 0)  // Filter out invalid years
+                .ToList();
+
+            // Apply year filters if provided
+            if (startYear > 0)
+            {
+                recallsWithYears = recallsWithYears.Where(r => r.Year >= startYear).ToList();
+            }
+
+            if (endYear > 0)
+            {
+                recallsWithYears = recallsWithYears.Where(r => r.Year <= endYear).ToList();
+            }
+
+            // Group by year and count
+            var recallsByYear = recallsWithYears
+                .GroupBy(r => r.Year)
+                .Select(g => new RecallsByYearDto
+                {
+                    Year = g.Key,
+                    Count = g.Count()
+                })
+                .OrderBy(r => r.Year)  // Order by year ascending
+                .ToList();
+
+            return recallsByYear;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting recalls by year: {ex.Message}");
+            return new List<RecallsByYearDto>();
+        }
+    }
+
+    private int ExtractYearFromDate(string dateString)
+    {
+        // Try to parse the date string and extract the year
+        if (DateTime.TryParse(dateString, out DateTime date))
+        {
+            return date.Year;
+        }
+
+        // If the date format is MM/DD/YYYY
+        if (dateString.Contains("/"))
+        {
+            var parts = dateString.Split('/');
+            if (parts.Length == 3 && int.TryParse(parts[2], out int year))
+            {
+                return year;
+            }
+        }
+
+        // If the date format is YYYY-MM-DD
+        if (dateString.Contains("-"))
+        {
+            var parts = dateString.Split('-');
+            if (parts.Length == 3 && int.TryParse(parts[0], out int year))
+            {
+                return year;
+            }
+        }
+
+        return 0; // Return 0 if year couldn't be extracted
+    }
+
     private string GetMainIssue(RecentRecallDto recall)
     {
         // Return the subject if it's not empty, otherwise return the component

@@ -27,7 +27,9 @@ public class DashboardController : ControllerBase
         {
             RecentRecallsCount = recentRecallsCount,
             TopManufacturersCount = topManufacturersCount,
-            MostRecalledVehiclesCount = mostRecalledVehiclesCount
+            MostRecalledVehiclesCount = mostRecalledVehiclesCount,
+            StartYear = 2015,
+            EndYear = 2025
         });
 
         return result.ToActionResult();
