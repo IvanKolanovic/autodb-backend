@@ -1,11 +1,12 @@
 using System.Reflection;
 using System.Text.Json;
 using Application.Common.Behaviours;
+using Application.Common.Interfaces;
 using Application.Repositories.Dashboard;
 using Application.Repositories.Nhtsa;
 using FluentValidation;
+using Application.Services;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
 
@@ -57,6 +58,8 @@ public static class DependencyInjection
             httpClient.DefaultRequestHeaders.Add("User-Agent", "Nhtsa API");
         });
 
+        // Register Cache Service
+        services.AddScoped<ICacheService, RedisCacheService>();
         return services;
     }
 }
