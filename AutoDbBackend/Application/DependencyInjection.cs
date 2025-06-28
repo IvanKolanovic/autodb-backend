@@ -1,9 +1,11 @@
 using System.Reflection;
 using System.Text.Json;
 using Application.Common.Behaviours;
+using Application.Repositories.Dashboard;
 using Application.Repositories.Nhtsa;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
 
@@ -23,6 +25,17 @@ public static class DependencyInjection
         // Add FluentValidation
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
+        // Register DashboardRepository with absolute path to CSV file
+        var csvFilePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "recall_data.csv"));
+
+        // If that doesn't exist, try another path
+        if (!File.Exists(csvFilePath))
+        {
+            csvFilePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "AutoDbBackend", "Infrastructure", "Data", "recall_data.csv"));
+        }
+
+        Console.WriteLine($"Registering DashboardRepository with CSV file path: {csvFilePath}");
+        services.AddScoped<IDashboardRepository>(provider => new DashboardRepository(csvFilePath));
 
         var options = new JsonSerializerOptions
         {

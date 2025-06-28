@@ -2,6 +2,7 @@ using Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.IO;
 
 namespace Infrastructure;
 
@@ -12,7 +13,6 @@ public static class DependencyInjection
         // Add Entity Framework
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-
         return services;
     }
 }
