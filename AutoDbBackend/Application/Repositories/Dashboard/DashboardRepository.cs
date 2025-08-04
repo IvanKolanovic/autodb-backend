@@ -6,23 +6,16 @@ using CsvHelper.Configuration;
 
 namespace Application.Repositories.Dashboard;
 
-public class DashboardRepository : IDashboardRepository
+public class DashboardRepository(string csvFilePath) : IDashboardRepository
 {
-    private readonly string _csvFilePath;
-
-    public DashboardRepository(string csvFilePath)
-    {
-        _csvFilePath = csvFilePath;
-    }
-
     public async Task<List<RecentRecallDto>> GetRecentRecalls(int count = 10)
     {
         try
         {
-            if (!File.Exists(_csvFilePath))
+            if (!File.Exists(csvFilePath))
             {
-                Console.WriteLine($"CSV file not found at: {_csvFilePath}");
-                return new List<RecentRecallDto>();
+                Console.WriteLine($"CSV file not found at: {csvFilePath}");
+                return [];
             }
 
             // Configure CSV reader
@@ -34,7 +27,7 @@ public class DashboardRepository : IDashboardRepository
             };
 
             // Use async file operations
-            using var stream = new FileStream(_csvFilePath, FileMode.Open, FileAccess.Read, FileShare.Read,
+            await using var stream = new FileStream(csvFilePath, FileMode.Open, FileAccess.Read, FileShare.Read,
                 bufferSize: 4096, useAsync: true);
             using var reader = new StreamReader(stream);
             using var csv = new CsvReader(reader, configuration);
@@ -64,9 +57,7 @@ public class DashboardRepository : IDashboardRepository
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error reading CSV file: {ex.Message}");
-            // Return empty list in case of error
-            return new List<RecentRecallDto>();
+            return [];
         }
     }
 
@@ -93,8 +84,7 @@ public class DashboardRepository : IDashboardRepository
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error getting recalls by manufacturer: {ex.Message}");
-            return new List<ManufacturerRecallCountDto>();
+            return [];
         }
     }
 
@@ -122,8 +112,7 @@ public class DashboardRepository : IDashboardRepository
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error getting most recalled vehicles: {ex.Message}");
-            return new List<MostRecalledVehicleDto>();
+            return [];
         }
     }
 
@@ -194,7 +183,7 @@ public class DashboardRepository : IDashboardRepository
         }
 
         // If the date format is YYYY-MM-DD
-        if (dateString.Contains("-"))
+        if (!dateString.Contains('-')) return 0; // Return 0 if year couldn't be extracted
         {
             var parts = dateString.Split('-');
             if (parts.Length == 3 && int.TryParse(parts[0], out int year))
@@ -206,7 +195,7 @@ public class DashboardRepository : IDashboardRepository
         return 0; // Return 0 if year couldn't be extracted
     }
 
-    private string GetMainIssue(RecentRecallDto recall)
+    private static string GetMainIssue(RecentRecallDto recall)
     {
         // Return the subject if it's not empty, otherwise return the component
         return !string.IsNullOrEmpty(recall.Subject)
@@ -218,10 +207,10 @@ public class DashboardRepository : IDashboardRepository
 
     private async Task<List<RecentRecallDto>> GetAllRecalls()
     {
-        if (!File.Exists(_csvFilePath))
+        if (!File.Exists(csvFilePath))
         {
-            Console.WriteLine($"CSV file not found at: {_csvFilePath}");
-            return new List<RecentRecallDto>();
+            Console.WriteLine($"CSV file not found at: {csvFilePath}");
+            return [];
         }
 
         // Configure CSV reader
@@ -233,7 +222,7 @@ public class DashboardRepository : IDashboardRepository
         };
 
         // Use async file operations
-        using var stream = new FileStream(_csvFilePath, FileMode.Open, FileAccess.Read, FileShare.Read,
+        await using var stream = new FileStream(csvFilePath, FileMode.Open, FileAccess.Read, FileShare.Read,
             bufferSize: 4096, useAsync: true);
         using var reader = new StreamReader(stream);
         using var csv = new CsvReader(reader, configuration);

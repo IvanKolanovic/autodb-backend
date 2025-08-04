@@ -1,6 +1,5 @@
 namespace Application.Common.Results;
 
-
 public class Result<TValue>
 {
     public bool IsSuccess { get; }
@@ -39,10 +38,5 @@ public class Result<TValue>
 
         var modifiedError = ApiErrors.ValidationFailed with { Details = errorDetails };
         return new Result<TValue>(modifiedError);
-    }
-
-    public static Result<TValue> Propagate(Result<dynamic> lowerResult)
-    {
-        return new Result<TValue>(lowerResult.Error);
     }
 }

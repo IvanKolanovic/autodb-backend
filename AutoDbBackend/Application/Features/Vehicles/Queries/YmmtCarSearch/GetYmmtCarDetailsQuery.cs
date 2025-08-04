@@ -13,33 +13,35 @@ public class GetYmmtCarDetailsQuery : IRequest<Result<ByYmmtDto>>
     public required string Trim { get; set; }
     public required string Series { get; set; }
 }
-
 public class GetYmmtCarDetailsQueryHandler(INhtsaRepository nhtsaRepository)
     : IRequestHandler<GetYmmtCarDetailsQuery, Result<ByYmmtDto>>
 {
     public async Task<Result<ByYmmtDto>> Handle(GetYmmtCarDetailsQuery request, CancellationToken cancellationToken)
     {
-        var param = new ByYmmtQueryParam
+        try
         {
-            make = request.Make,
-            model = request.Model,
-            trim = request.Trim,
-            modelYear = request.Year,
-            series = request.Series
-        };
+            var param = new ByYmmtQueryParam
+            {
+                make = request.Make,
+                model = request.Model,
+                trim = request.Trim,
+                modelYear = request.Year,
+                series = request.Series
+            };
 
-        var ymmt = await nhtsaRepository.ByYmmt(param);
-        if (ymmt.Results.Count == 0)
-        {
-            //return Result<ByYmmtDto>.Failed()
+            var ymmt = await nhtsaRepository.ByYmmt(param);
+            if (ymmt.Results.Count == 0)
+            {
+                return Result<ByYmmtDto>.Failed(ApiErrors.NotFound, $"No vehicle found with the specified Year-Make-Model-Trim parameters");
+            }
+
+            var ymmtDetails = await nhtsaRepository.ByYmmtDetails(ymmt.Results[0].VehicleId);
+            ymmt.Results[0].SafetyIssues = ymmtDetails.Results[0].SafetyIssues;
+            return ymmt;
         }
-        
-        
-        
-        var ymmtDetails = await nhtsaRepository.ByYmmtDetails(ymmt.Results[0].VehicleId);
-
-        ymmt.Results[0].SafetyIssues = ymmtDetails.Results[0].SafetyIssues;
-
-        return ymmt;
+        catch (Exception e)
+        {
+            return Result<ByYmmtDto>.Failed(ApiErrors.InternalServerError, $"Error retrieving vehicle details: {e.Message}");
+        }
     }
 }

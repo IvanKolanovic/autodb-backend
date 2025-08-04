@@ -58,10 +58,9 @@ public class SafetyRepository : ISafetyRepository
 
             return performanceData;
         }
-        catch (Exception ex)
+        catch (Exception _exception)
         {
-            Console.WriteLine($"Error getting crash test performance: {ex.Message}");
-            return new List<CrashTestPerformanceDto>();
+            return [];
         }
     }
 
@@ -87,8 +86,7 @@ public class SafetyRepository : ISafetyRepository
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error getting rollover resistance data: {ex.Message}");
-            return new List<RolloverResistanceDto>();
+            return [];
         }
     }
 
@@ -200,10 +198,10 @@ public class SafetyRepository : ISafetyRepository
     private int ExtractWeight(string[] fields)
     {
         // Try to find weight in the fields (typically in position 12 or 13)
-        for (int i = 12; i < Math.Min(fields.Length, 15); i++)
+        for (var i = 12; i < Math.Min(fields.Length, 15); i++)
         {
             var weight = TryParseInt(CleanField(fields[i]));
-            if (weight > 1000 && weight < 10000) // Reasonable weight range for vehicles
+            if (weight is > 1000 and < 10000) // Reasonable weight range for vehicles
             {
                 return weight;
             }
@@ -214,10 +212,10 @@ public class SafetyRepository : ISafetyRepository
     private int ExtractOverallRating(string[] fields)
     {
         // Try to find overall rating (typically near position 9)
-        for (int i = 8; i < Math.Min(fields.Length, 12); i++)
+        for (var i = 8; i < Math.Min(fields.Length, 12); i++)
         {
             var rating = TryParseInt(CleanField(fields[i]));
-            if (rating >= 1 && rating <= 5) // Ratings are typically 1-5
+            if (rating is >= 1 and <= 5) // Ratings are typically 1-5
             {
                 return rating;
             }
@@ -228,10 +226,10 @@ public class SafetyRepository : ISafetyRepository
     private int ExtractFrontCrashRating(string[] fields)
     {
         // Search for front crash rating in various positions
-        for (int i = 50; i < Math.Min(fields.Length, 100); i++)
+        for (var i = 50; i < Math.Min(fields.Length, 100); i++)
         {
             var rating = TryParseInt(CleanField(fields[i]));
-            if (rating >= 1 && rating <= 5)
+            if (rating is >= 1 and <= 5)
             {
                 return rating;
             }
@@ -242,10 +240,10 @@ public class SafetyRepository : ISafetyRepository
     private int ExtractSideCrashRating(string[] fields)
     {
         // Search for side crash rating in various positions
-        for (int i = 70; i < Math.Min(fields.Length, 120); i++)
+        for (var i = 70; i < Math.Min(fields.Length, 120); i++)
         {
             var rating = TryParseInt(CleanField(fields[i]));
-            if (rating >= 1 && rating <= 5)
+            if (rating is >= 1 and <= 5)
             {
                 return rating;
             }
@@ -256,10 +254,10 @@ public class SafetyRepository : ISafetyRepository
     private int ExtractRolloverRating(string[] fields)
     {
         // Search for rollover rating in various positions
-        for (int i = 90; i < Math.Min(fields.Length, 140); i++)
+        for (var i = 90; i < Math.Min(fields.Length, 140); i++)
         {
             var rating = TryParseInt(CleanField(fields[i]));
-            if (rating >= 1 && rating <= 5)
+            if (rating is >= 1 and <= 5)
             {
                 return rating;
             }

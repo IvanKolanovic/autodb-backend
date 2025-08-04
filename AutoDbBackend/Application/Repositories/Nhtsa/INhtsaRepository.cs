@@ -13,5 +13,4 @@ public interface INhtsaRepository
 
     [Get("/vehicles/{vehicleId}/details?data=complaints,recalls,investigations,manufacturercommunications&productDetail=minimal")]
     Task<ByYmmtDto> ByYmmtDetails(int vehicleId);
-
 }

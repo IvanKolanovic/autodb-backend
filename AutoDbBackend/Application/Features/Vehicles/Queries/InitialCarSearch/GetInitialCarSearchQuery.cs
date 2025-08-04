@@ -33,9 +33,7 @@ internal class GetInitialCarSearchQueryHandler(INhtsaRepository nhtsaRepository)
         }
         catch (Exception e)
         {
-//          return Result<BySearchDto>.Failed(ApiErrors.InternalServerError);\
-            Console.WriteLine(e);
-            return null;
+            return Result<BySearchDto>.Failed(ApiErrors.InternalServerError, $"Error searching for vehicles: {e.Message}");
         }
     }
 }
